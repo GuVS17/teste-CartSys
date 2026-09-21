@@ -13,6 +13,10 @@ type
     Cadastros1: TMenuItem;
     Relatrios1: TMenuItem;
     Sair1: TMenuItem;
+    Cliente1: TMenuItem;
+    Relatrios2: TMenuItem;
+    procedure Cliente1Click(Sender: TObject);
+    procedure Relatrios2Click(Sender: TObject);
     procedure Sair1Click(Sender: TObject);
   private
     { Private declarations }
@@ -26,6 +30,22 @@ var
 implementation
 
 {$R *.dfm}
+
+uses Relatorio, CadastroClientes;
+
+procedure TFrPrincipal.Cliente1Click(Sender: TObject);
+begin
+  FrCadCliente := TFrCadCliente.Create(nil);
+  FrCadCliente.ShowModal;
+  FrCadCliente.Release;
+end;
+
+procedure TFrPrincipal.Relatrios2Click(Sender: TObject);
+begin
+  FrRelatorio := TFrRelatorio.Create(nil);
+  FrRelatorio.ShowModal;
+  FrRelatorio.Release;
+end;
 
 procedure TFrPrincipal.Sair1Click(Sender: TObject);
 begin

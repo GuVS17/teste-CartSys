@@ -1,8 +1,8 @@
-object FrCadCliente: TFrCadCliente
+object FrRelatorio: TFrRelatorio
   Left = 0
   Top = 0
   BorderStyle = bsDialog
-  Caption = 'Cadastro de Clientes'
+  Caption = 'Relat'#243'rio'
   ClientHeight = 309
   ClientWidth = 645
   Color = clBtnFace

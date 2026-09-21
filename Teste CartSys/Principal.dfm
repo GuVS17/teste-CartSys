@@ -12,6 +12,7 @@ object FrPrincipal: TFrPrincipal
   Font.Style = []
   Menu = MenuPrincipal
   OldCreateOrder = False
+  WindowState = wsMaximized
   PixelsPerInch = 96
   TextHeight = 13
   object MenuPrincipal: TMainMenu
@@ -26,9 +27,17 @@ object FrPrincipal: TFrPrincipal
     end
     object Cadastros1: TMenuItem
       Caption = 'Cadastros'
+      object Cliente1: TMenuItem
+        Caption = 'Cliente'
+        OnClick = Cliente1Click
+      end
     end
     object Relatrios1: TMenuItem
       Caption = 'Relat'#243'rios'
+      object Relatrios2: TMenuItem
+        Caption = 'Relat'#243'rio'
+        OnClick = Relatrios2Click
+      end
     end
   end
 end

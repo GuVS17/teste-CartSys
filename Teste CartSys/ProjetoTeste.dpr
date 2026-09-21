@@ -2,7 +2,9 @@ program ProjetoTeste;
 
 uses
   Vcl.Forms,
-  Principal in 'Principal.pas' {FrPrincipal};
+  Principal in 'Principal.pas' {FrPrincipal},
+  CadastroClientes in 'CadastroClientes.pas' {FrCadCliente},
+  Relatorio in 'Relatorio.pas' {FrRelatorio};
 
 {$R *.res}
 
