@@ -5,7 +5,11 @@ uses
   Principal in 'Principal.pas' {FrPrincipal},
   CadastroClientes in 'CadastroClientes.pas' {FrCadCliente},
   Relatorio in 'Relatorio.pas' {FrRelatorio},
-  uDMConexao in 'uDMConexao.pas' {DMConexao: TDataModule};
+  uDMConexao in 'uDMConexao.pas' {DMConexao: TDataModule},
+  uCliente in 'uCliente.pas',
+  uClienteController in 'uClienteController.pas',
+  uClienteDAO in 'uClienteDAO.pas',
+  uViaCEP in 'uViaCEP.pas';
 
 {$R *.res}
 
