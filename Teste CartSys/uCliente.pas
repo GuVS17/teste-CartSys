@@ -30,31 +30,31 @@ type
   TCliente = class
   private
     FID: Integer;
-    FNome: string;
-    FCep: string;
-    FCpfCnpj: string;
-    FEndereco: string;
-    FNumero: string;
-    FComplemento: string;
-    FBairro: string;
+    FNome: String;
+    FCep: String;
+    FCpfCnpj: String;
+    FEndereco: String;
+    FNumero: String;
+    FComplemento: String;
+    FBairro: String;
     FCidadeId: Integer;
     FDataNascimento: TDate;
   public
     constructor Create;
     procedure Limpar;
-    function Validar(out AMensagem: string): Boolean;
+    function Validar(out AMensagem: String): Boolean;
     class function PodeExcluir(AId: Integer): Boolean;
-    class function SomenteNumeros(const AValor: string): string;
-    property ID: Integer read FID write FID;
-    property Nome: string read FNome write FNome;
-    property Cep: string read FCep write FCep;
-    property CpfCnpj: string read FCpfCnpj write FCpfCnpj;
-    property Endereco: string read FEndereco write FEndereco;
-    property Numero: string read FNumero write FNumero;
-    property Complemento: string read FComplemento write FComplemento;
-    property Bairro: string read FBairro write FBairro;
-    property CidadeId: Integer read FCidadeId write FCidadeId;
-    property DataNascimento: TDate read FDataNascimento write FDataNascimento;
+    class function SomenteNumeros(const AValor: String): String;
+    property ID: Integer Read FID Write FID;
+    property Nome: String Read FNome Write FNome;
+    property Cep: String Read FCep Write FCep;
+    property CpfCnpj: String Read FCpfCnpj Write FCpfCnpj;
+    property Endereco: String Read FEndereco Write FEndereco;
+    property Numero: String Read FNumero Write FNumero;
+    property Complemento: String Read FComplemento Write FComplemento;
+    property Bairro: String Read FBairro Write FBairro;
+    property CidadeId: Integer Read FCidadeId Write FCidadeId;
+    property DataNascimento: TDate Read FDataNascimento Write FDataNascimento;
   end;
 
 implementation
@@ -163,7 +163,7 @@ begin
   FDataNascimento := 0;
 end;
 
-function TCliente.Validar(out AMensagem: string): Boolean;
+function TCliente.Validar(out AMensagem: String): Boolean;
 var
   Doc: String;
   CepLimpo: String;

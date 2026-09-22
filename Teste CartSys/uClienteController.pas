@@ -8,11 +8,11 @@ uses
 type
   TResultadoCEP = record
     Sucesso: Boolean;
-    Mensagem: string;
-    Endereco: string;
-    Bairro: string;
+    Mensagem: String;
+    Endereco: String;
+    Bairro: String;
     CidadeId: Integer;
-    CidadeNome: string;
+    CidadeNome: String;
   end;
 
   TClienteController = class
@@ -25,21 +25,21 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Salvar(ACliente: TCliente; AInserindo: Boolean; out AMensagem: string): Boolean;
-    function Excluir(AId: Integer; out AMensagem: string): Boolean;
+    function Salvar(ACliente: TCliente; AInserindo: Boolean; out AMensagem: String): Boolean;
+    function Excluir(AId: Integer; out AMensagem: String): Boolean;
     function BuscarPorId(AId: Integer): TCliente;
     procedure Pesquisar(const AFiltro: TFiltroCliente);
     procedure CarregarLookups;
-    function ConsultarCEP(const ACep: string; out AResultado: TResultadoCEP): Boolean;
+    function ConsultarCEP(const ACep: String; out AResultado: TResultadoCEP): Boolean;
     procedure MontarRelatorio(const AFiltro: TFiltroRelatorio);
-    property QryPesquisa: TFDQuery read GetQryPesquisa;
-    property QryCidades: TFDQuery read GetQryCidades;
-    property QryEstados: TFDQuery read GetQryEstados;
-    property QryRelatorio: TFDQuery read GetQryRelatorio;
+    property QryPesquisa: TFDQuery Read GetQryPesquisa;
+    property QryCidades: TFDQuery Read GetQryCidades;
+    property QryEstados: TFDQuery Read GetQryEstados;
+    property QryRelatorio: TFDQuery Read GetQryRelatorio;
     function ProximoId: Integer;
     procedure DevolverId(AId: Integer);
-    function BuscarCidade(const ANome, AUF: string): Integer;
-    function NomeCidadePorId(AId: Integer): string;
+    function BuscarCidade(const ANome, AUF: String): Integer;
+    function NomeCidadePorId(AId: Integer): String;
   end;
 
 implementation
@@ -80,7 +80,7 @@ begin
   end;
 end;
 
-function TClienteController.Excluir(AId: Integer; out AMensagem: string): Boolean;
+function TClienteController.Excluir(AId: Integer; out AMensagem: String): Boolean;
 begin
   Result := False;
   if AId <= 0 then
@@ -122,11 +122,11 @@ begin
   FDAO.CarregarEstados;
 end;
 
-function TClienteController.ConsultarCEP(const ACep: string;
+function TClienteController.ConsultarCEP(const ACep: String;
   out AResultado: TResultadoCEP): Boolean;
 var
   Endereco: TEnderecoCEP;
-  CepLimpo: string;
+  CepLimpo: String;
 begin
   Result := False;
   AResultado.Sucesso    := False;
@@ -204,12 +204,12 @@ begin
   FDAO.DevolverId(AId);
 end;
 
-function TClienteController.BuscarCidade(const ANome, AUF: string): Integer;
+function TClienteController.BuscarCidade(const ANome, AUF: String): Integer;
 begin
   Result := FDAO.BuscarCidade(ANome, AUF);
 end;
 
-function TClienteController.NomeCidadePorId(AId: Integer): string;
+function TClienteController.NomeCidadePorId(AId: Integer): String;
 begin
   Result := FDAO.NomeCidadePorId(AId);
 end;

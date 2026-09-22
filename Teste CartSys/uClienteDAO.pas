@@ -25,14 +25,14 @@ type
     procedure CarregarCidades;
     procedure CarregarEstados;
     procedure MontarRelatorio(const AFiltro: TFiltroRelatorio);
-    property QryPesquisa: TFDQuery read FQryPesquisa;
-    property QryCidades: TFDQuery read FQryCidades;
-    property QryEstados: TFDQuery read FQryEstados;
-    property QryRelatorio: TFDQuery read FQryRelatorio;
+    property QryPesquisa: TFDQuery Read FQryPesquisa;
+    property QryCidades: TFDQuery Read FQryCidades;
+    property QryEstados: TFDQuery Read FQryEstados;
+    property QryRelatorio: TFDQuery Read FQryRelatorio;
     function ProximoId: Integer;
     procedure DevolverId(AId: Integer);
     function NomeCidadePorId(AId: Integer): String;
-    function BuscarCidade(const ANome, AUF: string): Integer;
+    function BuscarCidade(const ANome, AUF: String): Integer;
   end;
 
 implementation
@@ -61,7 +61,7 @@ begin
   Result.Connection := DMConexao.FDConnection;
 end;
 
-function TClienteDAO.CpfCnpjJaExiste(const ACpfCnpj: string; AIdAtual: Integer): Boolean;
+function TClienteDAO.CpfCnpjJaExiste(const ACpfCnpj: String; AIdAtual: Integer): Boolean;
 var
   Qry: TFDQuery;
 begin
@@ -309,7 +309,7 @@ begin
   FQryRelatorio.Open;
 end;
 
-function TClienteDAO.NomeCidadePorId(AId: Integer): string;
+function TClienteDAO.NomeCidadePorId(AId: Integer): String;
 var
   Qry: TFDQuery;
 begin
@@ -366,10 +366,10 @@ begin
   end;
 end;
 
-function TClienteDAO.BuscarCidade(const ANome, AUF: string): Integer;
+function TClienteDAO.BuscarCidade(const ANome, AUF: String): Integer;
 var
   Qry: TFDQuery;
-  SQL: string;
+  SQL: String;
 begin
   Result := 0;
   if Trim(ANome) = '' then

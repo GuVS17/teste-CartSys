@@ -345,7 +345,7 @@ end;
 
 procedure TFrCadCliente.btnSalvarClick(Sender: TObject);
 var
-  Mensagem: string;
+  Mensagem: String;
   IdCidade: Integer;
 begin
   TelaParaCliente;
