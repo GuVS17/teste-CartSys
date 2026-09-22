@@ -1,4 +1,4 @@
-unit uClienteDAO;
+﻿unit uClienteDAO;
 
 interface
 
@@ -13,8 +13,7 @@ type
     FQryEstados: TFDQuery;
     FQryRelatorio: TFDQuery;
     function NovaQuery: TFDQuery;
-    function ProximoId: Integer;
-    function CpfCnpjJaExiste(const ACpfCnpj: string; AIdAtual: Integer): Boolean;
+    function CpfCnpjJaExiste(const ACpfCnpj: String; AIdAtual: Integer): Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -22,7 +21,6 @@ type
     function Alterar(ACliente: TCliente): Boolean;
     function Excluir(AId: Integer): Boolean;
     function BuscarPorId(AId: Integer): TCliente;
-    function BuscarCidadePorNomeUF(const ANome, AUF: string): Integer;
     procedure Pesquisar(const AFiltro: TFiltroCliente);
     procedure CarregarCidades;
     procedure CarregarEstados;
@@ -31,6 +29,10 @@ type
     property QryCidades: TFDQuery read FQryCidades;
     property QryEstados: TFDQuery read FQryEstados;
     property QryRelatorio: TFDQuery read FQryRelatorio;
+    function ProximoId: Integer;
+    procedure DevolverId(AId: Integer);
+    function NomeCidadePorId(AId: Integer): String;
+    function BuscarCidade(const ANome, AUF: string): Integer;
   end;
 
 implementation
@@ -59,19 +61,6 @@ begin
   Result.Connection := DMConexao.FDConnection;
 end;
 
-function TClienteDAO.ProximoId: Integer;
-var
-  Qry: TFDQuery;
-begin
-  Qry := NovaQuery;
-  try
-    Qry.Open('SELECT GEN_ID(SEQ_CLIENTE, 1) AS ID FROM RDB$DATABASE');
-    Result := Qry.FieldByName('ID').AsInteger;
-  finally
-    Qry.Free;
-  end;
-end;
-
 function TClienteDAO.CpfCnpjJaExiste(const ACpfCnpj: string; AIdAtual: Integer): Boolean;
 var
   Qry: TFDQuery;
@@ -96,8 +85,9 @@ var
 begin
   Result := False;
   if CpfCnpjJaExiste(ACliente.CpfCnpj, 0) then
-    raise Exception.Create('J� existe um cliente com este CPF/CNPJ.');
-  ACliente.ID := ProximoId;
+    raise Exception.Create('Já existe um cliente com este CPF/CNPJ.');
+  if ACliente.ID <= 0 then
+    ACliente.ID := ProximoId;
   Qry := NovaQuery;
   try
     Qry.SQL.Text :=
@@ -208,27 +198,6 @@ begin
   end;
 end;
 
-function TClienteDAO.BuscarCidadePorNomeUF(const ANome, AUF: String): Integer;
-var
-  Qry: TFDQuery;
-begin
-  Result := 0;
-  Qry := NovaQuery;
-  try
-    Qry.SQL.Text :=
-      'SELECT CI.ID FROM CIDADE CI ' +
-      'JOIN ESTADO ES ON ES.ID = CI.ESTADOID ' +
-      'WHERE UPPER(CI.NOME) = UPPER(:NOME) AND ES.UF = :UF';
-    Qry.ParamByName('NOME').AsString := Trim(ANome);
-    Qry.ParamByName('UF').AsString := UpperCase(Trim(AUF));
-    Qry.Open;
-    if not Qry.IsEmpty then
-      Result := Qry.FieldByName('ID').AsInteger;
-  finally
-    Qry.Free;
-  end;
-end;
-
 procedure TClienteDAO.Pesquisar(const AFiltro: TFiltroCliente);
 var
   SQL: String;
@@ -241,34 +210,38 @@ begin
     'LEFT JOIN CIDADE CI ON CI.ID = CL.CIDADE ' +
     'LEFT JOIN ESTADO ES ON ES.ID = CI.ESTADOID ' +
     'WHERE 1 = 1';
+
   if AFiltro.Id > 0 then
     SQL := SQL + ' AND CL.ID = :ID';
   if Trim(AFiltro.Nome) <> '' then
-    SQL := SQL + ' AND CL.NOME CONTAINING :NOME';
+    SQL := SQL + ' AND UPPER(CL.NOME) LIKE :NOME';
   if Trim(AFiltro.CpfCnpj) <> '' then
-    SQL := SQL + ' AND CL.CPF_CNPJ CONTAINING :CPF_CNPJ';
+    SQL := SQL + ' AND CL.CPF_CNPJ LIKE :CPF_CNPJ';
   if Trim(AFiltro.Cep) <> '' then
-    SQL := SQL + ' AND CL.CEP CONTAINING :CEP';
-  if AFiltro.CidadeId > 0 then
-    SQL := SQL + ' AND CL.CIDADE = :CIDADEID';
+    SQL := SQL + ' AND CL.CEP LIKE :CEP';
+  if Trim(AFiltro.CidadeNome) <> '' then
+    SQL := SQL + ' AND UPPER(CI.NOME) LIKE :CIDADENOME';
   if AFiltro.EstadoId > 0 then
     SQL := SQL + ' AND ES.ID = :ESTADOID';
   if AFiltro.DataNascimento > 0 then
     SQL := SQL + ' AND CL.DATANASCIMENTO = :DATANASCIMENTO';
   SQL := SQL + ' ORDER BY CL.ID';
+
   FQryPesquisa.Close;
   FQryPesquisa.SQL.Text := SQL;
   if AFiltro.Id > 0 then
     FQryPesquisa.ParamByName('ID').AsInteger := AFiltro.Id;
   if Trim(AFiltro.Nome) <> '' then
-    FQryPesquisa.ParamByName('NOME').AsString := Trim(AFiltro.Nome);
+    FQryPesquisa.ParamByName('NOME').AsString := '%' + UpperCase(Trim(AFiltro.Nome)) + '%';
   if Trim(AFiltro.CpfCnpj) <> '' then
     FQryPesquisa.ParamByName('CPF_CNPJ').AsString :=
-      TCliente.SomenteNumeros(AFiltro.CpfCnpj);
+      '%' + TCliente.SomenteNumeros(AFiltro.CpfCnpj) + '%';
   if Trim(AFiltro.Cep) <> '' then
-    FQryPesquisa.ParamByName('CEP').AsString := TCliente.SomenteNumeros(AFiltro.Cep);
-  if AFiltro.CidadeId > 0 then
-    FQryPesquisa.ParamByName('CIDADEID').AsInteger := AFiltro.CidadeId;
+    FQryPesquisa.ParamByName('CEP').AsString :=
+      '%' + TCliente.SomenteNumeros(AFiltro.Cep) + '%';
+  if Trim(AFiltro.CidadeNome) <> '' then
+    FQryPesquisa.ParamByName('CIDADENOME').AsString :=
+      '%' + UpperCase(Trim(AFiltro.CidadeNome)) + '%';
   if AFiltro.EstadoId > 0 then
     FQryPesquisa.ParamByName('ESTADOID').AsInteger := AFiltro.EstadoId;
   if AFiltro.DataNascimento > 0 then
@@ -334,6 +307,93 @@ begin
       FQryRelatorio.ParamByName('ESTADOID').AsInteger := AFiltro.EstadoId;
   end;
   FQryRelatorio.Open;
+end;
+
+function TClienteDAO.NomeCidadePorId(AId: Integer): string;
+var
+  Qry: TFDQuery;
+begin
+  Result := '';
+  if AId <= 0 then
+    Exit;
+
+  Qry := NovaQuery;
+  try
+    Qry.SQL.Text := 'SELECT NOME FROM CIDADE WHERE ID = :ID';
+    Qry.ParamByName('ID').AsInteger := AId;
+    Qry.Open;
+    if not Qry.IsEmpty then
+      Result := Qry.FieldByName('NOME').AsString;
+  finally
+    Qry.Free;
+  end;
+end;
+
+function TClienteDAO.ProximoId: Integer;
+var
+  Qry: TFDQuery;
+begin
+  Qry := NovaQuery;
+  try
+    Qry.Open('SELECT GEN_ID(SEQ_CLIENTE, 1) AS ID FROM RDB$DATABASE');
+    Result := Qry.FieldByName('ID').AsInteger;
+  finally
+    Qry.Free;
+  end;
+end;
+
+procedure TClienteDAO.DevolverId(AId: Integer);
+var
+  Qry: TFDQuery;
+  Atual: Integer;
+begin
+  if AId <= 0 then
+    Exit;
+
+  Qry := NovaQuery;
+  try
+    Qry.Open('SELECT GEN_ID(SEQ_CLIENTE, 0) AS ID FROM RDB$DATABASE');
+    Atual := Qry.FieldByName('ID').AsInteger;
+    Qry.Close;
+
+    if Atual <> AId then
+      Exit;
+
+    Qry.SQL.Text := 'SELECT GEN_ID(SEQ_CLIENTE, -1) AS ID FROM RDB$DATABASE';
+    Qry.Open;
+  finally
+    Qry.Free;
+  end;
+end;
+
+function TClienteDAO.BuscarCidade(const ANome, AUF: string): Integer;
+var
+  Qry: TFDQuery;
+  SQL: string;
+begin
+  Result := 0;
+  if Trim(ANome) = '' then
+    Exit;
+
+  Qry := NovaQuery;
+  try
+    SQL :=
+      'SELECT CI.ID FROM CIDADE CI ' +
+      'JOIN ESTADO ES ON ES.ID = CI.ESTADOID ' +
+      'WHERE UPPER(CI.NOME) = UPPER(:NOME)';
+    if Trim(AUF) <> '' then
+      SQL := SQL + ' AND ES.UF = :UF';
+
+    Qry.SQL.Text := SQL;
+    Qry.ParamByName('NOME').AsString := Trim(ANome);
+    if Trim(AUF) <> '' then
+      Qry.ParamByName('UF').AsString := UpperCase(Trim(AUF));
+    Qry.Open;
+    if not Qry.IsEmpty then
+      Result := Qry.FieldByName('ID').AsInteger;
+  finally
+    Qry.Free;
+  end;
 end;
 
 end.

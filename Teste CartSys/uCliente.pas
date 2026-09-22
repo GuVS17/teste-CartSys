@@ -12,6 +12,7 @@ type
     CpfCnpj: String;
     Cep: String;
     CidadeId: Integer;
+    CidadeNome: String;
     EstadoId: Integer;
     DataNascimento: TDate;
   end;

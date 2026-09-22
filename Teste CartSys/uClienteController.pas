@@ -1,4 +1,4 @@
-unit uClienteController;
+Ôªøunit uClienteController;
 
 interface
 
@@ -12,6 +12,7 @@ type
     Endereco: string;
     Bairro: string;
     CidadeId: Integer;
+    CidadeNome: string;
   end;
 
   TClienteController = class
@@ -24,7 +25,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Salvar(ACliente: TCliente; out AMensagem: string): Boolean;
+    function Salvar(ACliente: TCliente; AInserindo: Boolean; out AMensagem: string): Boolean;
     function Excluir(AId: Integer; out AMensagem: string): Boolean;
     function BuscarPorId(AId: Integer): TCliente;
     procedure Pesquisar(const AFiltro: TFiltroCliente);
@@ -35,6 +36,10 @@ type
     property QryCidades: TFDQuery read GetQryCidades;
     property QryEstados: TFDQuery read GetQryEstados;
     property QryRelatorio: TFDQuery read GetQryRelatorio;
+    function ProximoId: Integer;
+    procedure DevolverId(AId: Integer);
+    function BuscarCidade(const ANome, AUF: string): Integer;
+    function NomeCidadePorId(AId: Integer): string;
   end;
 
 implementation
@@ -53,13 +58,14 @@ begin
   inherited Destroy;
 end;
 
-function TClienteController.Salvar(ACliente: TCliente; out AMensagem: String): Boolean;
+function TClienteController.Salvar(ACliente: TCliente; AInserindo: Boolean;
+  out AMensagem: String): Boolean;
 begin
   Result := False;
   if not ACliente.Validar(AMensagem) then
     Exit;
   try
-    if ACliente.ID = 0 then
+    if AInserindo then
       Result := FDAO.Inserir(ACliente)
     else
       Result := FDAO.Alterar(ACliente);
@@ -84,13 +90,13 @@ begin
   end;
   if not TCliente.PodeExcluir(AId) then
   begin
-    AMensagem := 'Este cliente n„o pode ser excluÌdo.';
+    AMensagem := 'Este cliente n√£o pode ser exclu√≠do.';
     Exit;
   end;
   try
     Result := FDAO.Excluir(AId);
     if Result then
-      AMensagem := 'Cliente excluÌdo com sucesso.';
+      AMensagem := 'Cliente exclu√≠do com sucesso.';
   except
     on E: Exception do
     begin
@@ -123,15 +129,17 @@ var
   CepLimpo: string;
 begin
   Result := False;
-  AResultado.Sucesso := False;
-  AResultado.Mensagem := '';
-  AResultado.Endereco := '';
-  AResultado.Bairro := '';
-  AResultado.CidadeId := 0;
+  AResultado.Sucesso    := False;
+  AResultado.Mensagem   := '';
+  AResultado.Endereco   := '';
+  AResultado.Bairro     := '';
+  AResultado.CidadeId   := 0;
+  AResultado.CidadeNome := '';
   CepLimpo := TCliente.SomenteNumeros(ACep);
+
   if Length(CepLimpo) <> 8 then
   begin
-    AResultado.Mensagem := 'CEP inv·lido.';
+    AResultado.Mensagem := 'CEP inv√°lido.';
     Exit;
   end;
   try
@@ -139,23 +147,26 @@ begin
   except
     on E: Exception do
     begin
-      AResultado.Mensagem := 'N„o foi possÌvel consultar o CEP. ' + E.Message;
+      AResultado.Mensagem := 'N√£o foi poss√≠vel consultar o CEP. ' + E.Message;
       Exit;
     end;
   end;
   if not Endereco.Encontrado then
   begin
-    AResultado.Mensagem := 'CEP n„o encontrado.';
+    AResultado.Mensagem := 'CEP n√£o encontrado.';
     Exit;
   end;
-  AResultado.Sucesso := True;
-  AResultado.Endereco := Endereco.Logradouro;
-  AResultado.Bairro := Endereco.Bairro;
-  AResultado.CidadeId := FDAO.BuscarCidadePorNomeUF(Endereco.Localidade, Endereco.UF);
+
+  AResultado.Sucesso    := True;
+  AResultado.Endereco   := Endereco.Logradouro;
+  AResultado.Bairro     := Endereco.Bairro;
+  AResultado.CidadeId   := FDAO.BuscarCidade(Endereco.Localidade, Endereco.UF);
+  AResultado.CidadeNome := Endereco.Localidade;
   Result := True;
+
   if AResultado.CidadeId = 0 then
     AResultado.Mensagem :=
-      'CEP v·lido, mas a cidade n„o est· cadastrada no sistema.';
+      'CEP v√°lido, mas a cidade n√£o est√° cadastrada no sistema.';
 end;
 
 procedure TClienteController.MontarRelatorio(const AFiltro: TFiltroRelatorio);
@@ -167,17 +178,40 @@ function TClienteController.GetQryPesquisa: TFDQuery;
 begin
   Result := FDAO.QryPesquisa;
 end;
+
 function TClienteController.GetQryCidades: TFDQuery;
 begin
   Result := FDAO.QryCidades;
 end;
+
 function TClienteController.GetQryEstados: TFDQuery;
 begin
   Result := FDAO.QryEstados;
 end;
+
 function TClienteController.GetQryRelatorio: TFDQuery;
 begin
   Result := FDAO.QryRelatorio;
+end;
+
+function TClienteController.ProximoId: Integer;
+begin
+  Result := FDAO.ProximoId;
+end;
+
+procedure TClienteController.DevolverId(AId: Integer);
+begin
+  FDAO.DevolverId(AId);
+end;
+
+function TClienteController.BuscarCidade(const ANome, AUF: string): Integer;
+begin
+  Result := FDAO.BuscarCidade(ANome, AUF);
+end;
+
+function TClienteController.NomeCidadePorId(AId: Integer): string;
+begin
+  Result := FDAO.NomeCidadePorId(AId);
 end;
 
 end.
