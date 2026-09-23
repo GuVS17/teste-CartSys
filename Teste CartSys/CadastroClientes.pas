@@ -10,17 +10,22 @@ uses
   cxCalendar, cxLookupEdit, cxDBLookupEdit, cxDBLookupComboBox, cxButtons,
   cxStyles, cxCustomData, cxFilter, cxData, cxDataStorage, cxNavigator, cxDBData,
   cxGridLevel, cxGridCustomView, cxGridCustomTableView, cxGridTableView,
-  cxGridDBTableView, cxGrid, cxClasses,
+  cxGridDBTableView, cxGrid, cxClasses, cxPC,
   uCliente, uClienteController, Vcl.Menus, dxSkinsCore, dxSkinsDefaultPainters,
-  Vcl.ComCtrls, dxCore, cxDateUtils, dxDateRanges, Vcl.StdCtrls;
+  Vcl.ComCtrls, dxCore, cxDateUtils, dxDateRanges, Vcl.StdCtrls,
+  dxBarBuiltInMenu;
 
 type
   TFrCadCliente = class(TForm)
+    pcPrincipal: TcxPageControl;
+    tsPesquisa: TcxTabSheet;
+    tsCadastro: TcxTabSheet;
     btnNovo: TcxButton;
     btnEditar: TcxButton;
     btnExcluir: TcxButton;
     btnSalvar: TcxButton;
     btnCancelar: TcxButton;
+    btnVoltar: TcxButton;
     gbDados: TcxGroupBox;
     lblId: TcxLabel;
     edtId: TcxTextEdit;
@@ -81,9 +86,11 @@ type
     procedure btnExcluirClick(Sender: TObject);
     procedure btnSalvarClick(Sender: TObject);
     procedure btnCancelarClick(Sender: TObject);
+    procedure btnVoltarClick(Sender: TObject);
     procedure btnPesquisarClick(Sender: TObject);
     procedure btnLimparFiltroClick(Sender: TObject);
     procedure edtCepExit(Sender: TObject);
+    procedure pcPrincipalChange(Sender: TObject);
     procedure tvPesquisaCellDblClick(Sender: TcxCustomGridTableView; ACellViewInfo:
         TcxGridTableDataCellViewInfo; AButton: TMouseButton; AShift: TShiftState;
         var AHandled: Boolean);
@@ -93,6 +100,7 @@ type
     FEditando: Boolean;
     FCarregando: Boolean;
     FInserindo: Boolean;
+    FTrocandoAba: Boolean;
     function ValorLookup(ALookup: TcxLookupComboBox): Integer;
     function ValorData(AEdit: TcxDateEdit): TDate;
     procedure HabilitarCampos(AHabilitar: Boolean);
@@ -101,6 +109,8 @@ type
     procedure CarregarPorId(AId: Integer);
     procedure AplicarPesquisa;
     procedure ConsultarCep;
+    procedure MostrarAbaPesquisa;
+    procedure MostrarAbaCadastro;
   public
     { Public declarations }
   end;
@@ -128,6 +138,26 @@ begin
     Result := AEdit.Date;
 end;
 
+procedure TFrCadCliente.MostrarAbaPesquisa;
+begin
+  FTrocandoAba := True;
+  try
+    pcPrincipal.ActivePage := tsPesquisa;
+  finally
+    FTrocandoAba := False;
+  end;
+end;
+
+procedure TFrCadCliente.MostrarAbaCadastro;
+begin
+  FTrocandoAba := True;
+  try
+    pcPrincipal.ActivePage := tsCadastro;
+  finally
+    FTrocandoAba := False;
+  end;
+end;
+
 procedure TFrCadCliente.HabilitarCampos(AHabilitar: Boolean);
 begin
   edtNome.Enabled        := AHabilitar;
@@ -140,11 +170,11 @@ begin
   edtCidade.Enabled      := AHabilitar;
   edtDataNasc.Enabled    := AHabilitar;
 
-  btnNovo.Enabled     := not AHabilitar;
-  btnEditar.Enabled   := (not AHabilitar) and (FCliente.ID > 0);
-  btnExcluir.Enabled  := (not AHabilitar) and (FCliente.ID > 0);
+  btnEditar.Enabled   := (not AHabilitar) and (FCliente.ID > 0) and (not FInserindo);
+  btnExcluir.Enabled  := (not AHabilitar) and (FCliente.ID > 0) and (not FInserindo);
   btnSalvar.Enabled   := AHabilitar;
   btnCancelar.Enabled := AHabilitar;
+  btnVoltar.Enabled   := not AHabilitar;
 end;
 
 procedure TFrCadCliente.ClienteParaTela;
@@ -254,6 +284,7 @@ begin
   FEditando := False;
   FCarregando := False;
   FInserindo := False;
+  FTrocandoAba := False;
 
   dsCidades.DataSet := FController.QryCidades;
   dsEstados.DataSet := FController.QryEstados;
@@ -266,6 +297,7 @@ begin
   ClienteParaTela;
   HabilitarCampos(False);
   AplicarPesquisa;
+  MostrarAbaPesquisa;
 end;
 
 procedure TFrCadCliente.FormDestroy(Sender: TObject);
@@ -285,6 +317,18 @@ begin
   Perform(WM_NEXTDLGCTL, 0, 0);
 end;
 
+procedure TFrCadCliente.pcPrincipalChange(Sender: TObject);
+begin
+  if FTrocandoAba then
+    Exit;
+
+  if FEditando and (pcPrincipal.ActivePage = tsPesquisa) then
+  begin
+    MostrarAbaCadastro;
+    ShowMessage('Salve ou cancele as alterações antes de voltar à pesquisa.');
+  end;
+end;
+
 procedure TFrCadCliente.btnNovoClick(Sender: TObject);
 begin
   FCliente.Limpar;
@@ -293,6 +337,7 @@ begin
   FInserindo := True;
   FEditando := True;
   HabilitarCampos(True);
+  MostrarAbaCadastro;
   if edtNome.CanFocus then
     edtNome.SetFocus;
 end;
@@ -323,7 +368,7 @@ begin
 
   if not TCliente.PodeExcluir(FCliente.ID) then
   begin
-    ShowMessage('Este cliente n'#227'o pode ser exclu'#237'do.');
+    ShowMessage('Este cliente não pode ser excluído.');
     Exit;
   end;
 
@@ -338,6 +383,7 @@ begin
     ClienteParaTela;
     HabilitarCampos(False);
     AplicarPesquisa;
+    MostrarAbaPesquisa;
   end
   else
     ShowMessage(Mensagem);
@@ -373,6 +419,7 @@ begin
   ClienteParaTela;
   HabilitarCampos(False);
   AplicarPesquisa;
+  MostrarAbaPesquisa;
 end;
 
 procedure TFrCadCliente.btnCancelarClick(Sender: TObject);
@@ -396,7 +443,18 @@ begin
     FCliente.Limpar;
     ClienteParaTela;
     HabilitarCampos(False);
+    MostrarAbaPesquisa;
   end;
+end;
+
+procedure TFrCadCliente.btnVoltarClick(Sender: TObject);
+begin
+  if FEditando then
+  begin
+    ShowMessage('Salve ou cancele as alterações antes de voltar à pesquisa.');
+    Exit;
+  end;
+  MostrarAbaPesquisa;
 end;
 
 procedure TFrCadCliente.btnPesquisarClick(Sender: TObject);
@@ -429,7 +487,9 @@ begin
     Exit;
   if FController.QryPesquisa.IsEmpty then
     Exit;
+
   CarregarPorId(FController.QryPesquisa.FieldByName('ID').AsInteger);
+  MostrarAbaCadastro;
 end;
 
 end.

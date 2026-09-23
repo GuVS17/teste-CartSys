@@ -1,9 +1,9 @@
-object FrPrincipal: TFrPrincipal
+﻿object FrPrincipal: TFrPrincipal
   Left = 0
   Top = 0
-  Caption = 'Principal'
-  ClientHeight = 299
-  ClientWidth = 635
+  Caption = 'CartSys - Controle de Clientes'
+  ClientHeight = 441
+  ClientWidth = 784
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,11 +13,37 @@ object FrPrincipal: TFrPrincipal
   Menu = MenuPrincipal
   OldCreateOrder = False
   WindowState = wsMaximized
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object pnlFundo: TPanel
+    Left = 0
+    Top = 0
+    Width = 784
+    Height = 422
+    Align = alClient
+    BevelOuter = bvNone
+    Color = 15724527
+    ParentBackground = False
+    TabOrder = 0
+  end
+  object stbRodape: TStatusBar
+    Left = 0
+    Top = 422
+    Width = 784
+    Height = 19
+    Panels = <
+      item
+        Width = 200
+      end
+      item
+        Width = 50
+      end>
+    SimplePanel = False
+  end
   object MenuPrincipal: TMainMenu
-    Left = 312
-    Top = 152
+    Left = 24
+    Top = 16
     object Sistema1: TMenuItem
       Caption = 'Sistema'
       object Sair1: TMenuItem
